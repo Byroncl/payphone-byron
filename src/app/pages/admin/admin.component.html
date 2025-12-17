@@ -1,0 +1,149 @@
+<app-navbar></app-navbar>
+
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>🏥 Panel de Administración</h1>
+  </div>
+
+  <div class="admin-tabs">
+    <button
+      class="tab-btn"
+      [class.active]="currentView() === 'dashboard'"
+      (click)="switchView('dashboard')"
+    >
+      Dashboard
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="currentView() === 'users'"
+      (click)="switchView('users')"
+    >
+      Usuarios
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="currentView() === 'purchases'"
+      (click)="switchView('purchases')"
+    >
+      Compras
+    </button>
+  </div>
+
+  <!-- Dashboard View -->
+  <div class="dashboard-view" *ngIf="currentView() === 'dashboard'">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <h3>{{ stats().totalUsuarios }}</h3>
+          <p>Usuarios Registrados</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <h3>{{ stats().totalCompras }}</h3>
+          <p>Total Compras</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h3>${{ stats().ventasTotales.toFixed(2) }}</h3>
+          <p>Ventas Totales</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+          <h3>{{ stats().comprasPendientes }}</h3>
+          <p>Compras Pendientes</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users View -->
+  <div class="users-view" *ngIf="currentView() === 'users'">
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Tipo</th>
+            <th>Fecha Registro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users()">
+            <td>{{ user.id }}</td>
+            <td>{{ user.nombre }} {{ user.apellido }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.telefono }}</td>
+            <td>{{ user.direccion }}</td>
+            <td>
+              <span class="badge" [class.badge-admin]="user.tipo === 'admin'">
+                {{ user.tipo }}
+              </span>
+            </td>
+            <td>{{ user.createdAt | date: 'dd/MM/yyyy' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Purchases View -->
+  <div class="purchases-view" *ngIf="currentView() === 'purchases'">
+    <div class="purchases-list">
+      <div class="purchase-admin-card" *ngFor="let purchase of purchases$ | async">
+        <div class="purchase-admin-header">
+          <div class="purchase-info">
+            <h3>Pedido #{{ purchase.id }}</h3>
+            <p class="user-info">
+              Cliente: {{ getUserById(purchase.userId)?.nombre }} {{ getUserById(purchase.userId)?.apellido }}
+              ({{ getUserById(purchase.userId)?.email }})
+            </p>
+            <p class="date-info">{{ purchase.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+
+          <div class="purchase-status-control">
+            <select
+              [value]="purchase.status"
+              (change)="updateStatus(purchase.id, $any($event.target).value)"
+              [ngClass]="getStatusClass(purchase.status)"
+            >
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobado">Aprobado</option>
+              <option value="rechazado">Rechazado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="purchase-items">
+          <div class="item" *ngFor="let item of purchase.items">
+            <span class="item-name">{{ item.productName }}</span>
+            <span class="item-quantity">x{{ item.quantity }}</span>
+            <span class="item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="purchase-admin-footer">
+          <div class="payment-id">
+            <small>ID Pago: {{ purchase.paymentId }}</small>
+          </div>
+          <div class="total">
+            <strong>Total: ${{ purchase.total.toFixed(2) }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

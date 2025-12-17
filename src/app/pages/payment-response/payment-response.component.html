@@ -1,0 +1,39 @@
+<app-navbar></app-navbar>
+
+<div class="payment-response-container">
+  <div class="response-card">
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      <h2>{{ message }}</h2>
+      <p>Por favor espera mientras verificamos tu pago...</p>
+    </div>
+
+    <div *ngIf="!loading && success" class="success-state">
+      <div class="icon-success">✓</div>
+      <h2>{{ message }}</h2>
+      <p>Tu compra ha sido procesada correctamente.</p>
+      <p class="transaction-id">ID de transacción: <strong>{{ transactionId }}</strong></p>
+      <p class="redirect-message">Redirigiendo al historial de compras...</p>
+      <button class="btn-primary" (click)="goToHistory()">
+        Ver mis compras
+      </button>
+    </div>
+
+    <div *ngIf="!loading && !success" class="error-state">
+      <div class="icon-error">✕</div>
+      <h2>Pago no completado</h2>
+      <p>{{ message }}</p>
+      <p *ngIf="transactionId" class="transaction-id">
+        ID de transacción: <strong>{{ transactionId }}</strong>
+      </p>
+      <div class="button-group">
+        <button class="btn-secondary" (click)="goToCart()">
+          Volver al carrito
+        </button>
+        <button class="btn-primary" (click)="goToHistory()">
+          Ver mis compras
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

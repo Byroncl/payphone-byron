@@ -1,0 +1,48 @@
+<app-navbar></app-navbar>
+
+<div class="historial-container">
+  <div class="historial-header">
+    <h1>📦 Historial de Compras</h1>
+    <p>Consulta el estado de tus pedidos</p>
+  </div>
+
+  <div class="loading" *ngIf="loading$ | async">
+    Cargando...
+  </div>
+
+  <div class="purchases-list" *ngIf="!(loading$ | async)">
+    <div class="empty-state" *ngIf="(purchases$ | async)?.length === 0">
+      <p>No tienes compras registradas</p>
+      <a routerLink="/catalogo" class="btn-primary">Ir al Catálogo</a>
+    </div>
+
+    <div class="purchase-card" *ngFor="let purchase of purchases$ | async">
+      <div class="purchase-header">
+        <div class="purchase-id">
+          <strong>Pedido #{{ purchase.id }}</strong>
+          <span class="purchase-date">{{ purchase.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="purchase-status" [ngClass]="getStatusClass(purchase.status)">
+          {{ getStatusText(purchase.status) }}
+        </div>
+      </div>
+
+      <div class="purchase-items">
+        <div class="purchase-item" *ngFor="let item of purchase.items">
+          <span class="item-name">{{ item.productName }}</span>
+          <span class="item-quantity">x{{ item.quantity }}</span>
+          <span class="item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+        </div>
+      </div>
+
+      <div class="purchase-footer">
+        <div class="payment-id">
+          <small>ID de Pago: {{ purchase.paymentId }}</small>
+        </div>
+        <div class="purchase-total">
+          <strong>Total: ${{ purchase.total.toFixed(2) }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

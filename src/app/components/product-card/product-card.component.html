@@ -1,0 +1,31 @@
+<div class="product-card">
+  <div class="product-image">
+    <img [src]="product.imagen" [alt]="product.nombre" />
+    <span class="product-badge" *ngIf="product.requiereReceta">
+      Requiere Receta
+    </span>
+    <span class="product-badge stock-badge" [class.low-stock]="product.stock < 20">
+      Stock: {{ product.stock }}
+    </span>
+  </div>
+
+  <div class="product-info">
+    <span class="product-category">{{ product.categoria }}</span>
+    <h3 class="product-name">{{ product.nombre }}</h3>
+    <p class="product-description">{{ product.descripcion }}</p>
+
+    <div class="product-footer">
+      <div class="product-price">
+        ${{ product.precio.toFixed(2) }}
+      </div>
+      <button
+        class="btn-add-to-cart"
+        (click)="addToCart()"
+        [disabled]="product.stock === 0"
+      >
+        <span *ngIf="product.stock > 0">Agregar al Carrito</span>
+        <span *ngIf="product.stock === 0">Agotado</span>
+      </button>
+    </div>
+  </div>
+</div>

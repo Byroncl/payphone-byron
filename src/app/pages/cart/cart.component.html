@@ -1,0 +1,71 @@
+<app-navbar></app-navbar>
+
+<div class="cart-container">
+  <div class="cart-header">
+    <h1>🛒 Carrito de Compras</h1>
+  </div>
+
+  <div class="cart-content" *ngIf="(cartItems$ | async) as cartItems">
+    <div class="empty-cart" *ngIf="cartItems.length === 0">
+      <p>Tu carrito está vacío</p>
+      <a routerLink="/catalogo" class="btn-primary">Ir al Catálogo</a>
+    </div>
+
+    <div class="cart-items" *ngIf="cartItems.length > 0">
+      <div class="cart-item" *ngFor="let item of cartItems">
+        <div class="item-image">
+          <img [src]="item.product.imagen" [alt]="item.product.nombre" />
+        </div>
+
+        <div class="item-info">
+          <h3>{{ item.product.nombre }}</h3>
+          <p class="item-category">{{ item.product.categoria }}</p>
+          <p class="item-price">${{ item.product.precio.toFixed(2) }} c/u</p>
+        </div>
+
+        <div class="item-quantity">
+          <button (click)="updateQuantity(item.product.id, item.quantity - 1)">-</button>
+          <span>{{ item.quantity }}</span>
+          <button (click)="updateQuantity(item.product.id, item.quantity + 1)"
+                  [disabled]="item.quantity >= item.product.stock">+</button>
+        </div>
+
+        <div class="item-total">
+          <p>${{ (item.product.precio * item.quantity).toFixed(2) }}</p>
+        </div>
+
+        <button class="btn-remove" (click)="removeItem(item.product.id)">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <div class="cart-summary" *ngIf="cartItems.length > 0">
+      <div class="summary-row">
+        <span>Subtotal:</span>
+        <span>${{ (cartTotal$ | async)?.toFixed(2) }}</span>
+      </div>
+      <div class="summary-row">
+        <span>IVA (12%):</span>
+        <span>${{ (((cartTotal$ | async) || 0) * 0.12).toFixed(2) }}</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total:</span>
+        <span>${{ (((cartTotal$ | async) || 0) * 1.12).toFixed(2) }}</span>
+      </div>
+
+      <button
+        class="btn-checkout"
+        (click)="checkout()"
+        [disabled]="processing"
+      >
+        <span *ngIf="!processing">Proceder al Pago</span>
+        <span *ngIf="processing">Procesando...</span>
+      </button>
+
+      <p class="payment-info">
+        Pago seguro procesado con Payphone
+      </p>
+    </div>
+  </div>
+</div>

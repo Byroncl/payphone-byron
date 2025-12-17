@@ -1,0 +1,41 @@
+<app-navbar></app-navbar>
+
+<div class="catalogo-container">
+  <div class="catalogo-header">
+    <h1>🏥 Catálogo de Productos</h1>
+    <p>Encuentra los medicamentos y productos de salud que necesitas</p>
+  </div>
+
+  <div class="filters-section">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Buscar productos..."
+        [value]="searchTerm()"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+    </div>
+
+    <div class="categories">
+      <button
+        *ngFor="let category of categories"
+        class="category-btn"
+        [class.active]="selectedCategory() === category"
+        (click)="onCategoryChange(category)"
+      >
+        {{ category }}
+      </button>
+    </div>
+  </div>
+
+  <div class="products-grid">
+    <app-product-card
+      *ngFor="let product of filteredProducts"
+      [product]="product"
+    ></app-product-card>
+  </div>
+
+  <div class="no-results" *ngIf="filteredProducts.length === 0">
+    <p>No se encontraron productos</p>
+  </div>
+</div>

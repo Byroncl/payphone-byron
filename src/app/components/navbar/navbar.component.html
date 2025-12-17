@@ -1,0 +1,53 @@
+<nav class="navbar" *ngIf="currentUser$ | async as user">
+  <div class="navbar-container">
+    <div class="navbar-brand">
+      <a routerLink="/catalogo">🏥 Farmacia Online</a>
+    </div>
+
+    <div class="navbar-menu">
+      <a
+        *ngIf="!(isAdmin$ | async)"
+        routerLink="/catalogo"
+        routerLinkActive="active"
+        class="nav-link"
+      >
+        Catálogo
+      </a>
+
+      <a
+        *ngIf="!(isAdmin$ | async)"
+        routerLink="/historial"
+        routerLinkActive="active"
+        class="nav-link"
+      >
+        Mis Compras
+      </a>
+
+      <a
+        *ngIf="isAdmin$ | async"
+        routerLink="/admin"
+        routerLinkActive="active"
+        class="nav-link"
+      >
+        Dashboard
+      </a>
+
+      <a
+        *ngIf="!(isAdmin$ | async)"
+        routerLink="/cart"
+        routerLinkActive="active"
+        class="nav-link cart-link"
+      >
+        🛒 Carrito
+        <span class="cart-badge" *ngIf="(cartItemCount$ | async) as count">
+          {{ count }}
+        </span>
+      </a>
+
+      <div class="user-menu">
+        <span class="user-name">{{ user.nombre }} {{ user.apellido }}</span>
+        <button class="btn-logout" (click)="onLogout()">Cerrar Sesión</button>
+      </div>
+    </div>
+  </div>
+</nav>

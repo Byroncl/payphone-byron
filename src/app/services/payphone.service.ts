@@ -98,15 +98,46 @@ export class PayphoneService {
       // Guardar el transactionId en sessionStorage para recuperarlo después
       sessionStorage.setItem('pendingTransactionId', data.transactionId || clientTransactionId);
 
-      console.log('Redirigiendo a:', paymentUrl);
+      console.log('Redirigiendo a página de pago:', paymentUrl);
 
-      // Cerrar cualquier modal de SweetAlert antes de redirigir
+      // Cerrar el loading
       Swal.close();
 
-      // Pequeño delay para asegurar que SweetAlert se cierra antes de redirigir
-      setTimeout(() => {
+      // Mostrar confirmación antes de redirigir
+      const result = await Swal.fire({
+        title: 'Redirigiendo a Payphone',
+        html: `
+          <div style="text-align: center;">
+            <div style="margin: 20px 0;">
+              <svg width="80" height="80" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#667eea" stroke-width="6" stroke-dasharray="283" stroke-dashoffset="75" stroke-linecap="round">
+                  <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="1s" repeatCount="indefinite"/>
+                </circle>
+              </svg>
+            </div>
+            <p style="font-size: 1.1rem; color: #666; margin-bottom: 10px;">
+              Serás redirigido a la plataforma de pago seguro de Payphone
+            </p>
+            <p style="font-size: 0.9rem; color: #999;">
+              Monto a pagar: <strong style="color: #667eea;">$${(amount).toFixed(2)}</strong>
+            </p>
+          </div>
+        `,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Continuar al pago',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#667eea',
+        cancelButtonColor: '#d33',
+        timer: 5000,
+        timerProgressBar: true,
+        allowOutsideClick: false
+      });
+
+      if (result.isConfirmed || result.dismiss === Swal.DismissReason.timer) {
+        // Usuario confirmó o se acabó el tiempo, redirigir
         window.location.href = paymentUrl;
-      }, 100);
+      }
 
       return {
         transactionId: data.transactionId || clientTransactionId,

@@ -2,35 +2,42 @@ name: CI/CD Quetsana Payphone
 
 on:
   push:
-    [cite_start]branches: [ "main", "master" ] # Automatización completa al hacer push 
+    branches: [ "main", "master" ]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        [cite_start]uses: actions/checkout@v4 # Integración con el SCM 
+        uses: actions/checkout@v4
 
-      # ETAPA 1: BUILD (Simulada para la rúbrica)
-      - name: Build Application Structure
-        run: |
-          echo "Iniciando etapa de Build..."
-          # Aquí el pipeline verifica que existan los archivos clave 
-          ls -la
-
-      # ETAPA 2: DEPLOY (Despliegue Continuo)
-      - name: Deploy to Contabo Server
+      - name: Deploy and Verify
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: root
-          [cite_start]key: ${{ secrets.SSH_KEY }} # Llave privada generada en el servidor [cite: 7, 9]
+          key: ${{ secrets.SSH_KEY }}
           script: |
-            # Crear directorio del proyecto si no existe
-            mkdir -p /home/quetsana-app
-            cd /home/quetsana-app
+            cd /home/quetsana-payphone
             
-            # El servidor construye la imagen localmente usando Docker Compose
-            # Esto refleja buenas prácticas de CI/CD 
+            echo "--- INICIANDO DESPLIEGUE ---"
+            # 1. Bajar servicios anteriores y limpiar imágenes huérfanas (Buenas prácticas)
             docker compose down || true
+            docker image prune -f
+            
+            # 2. Reconstruir y levantar (Etapa de Build/Deploy en servidor)
             docker compose up --build -d
+            
+            echo "--- VERIFICACIÓN DE SALUD ---"
+            # 3. Esperar unos segundos a que el contenedor inicie
+            sleep 5
+            
+            # 4. Verificar si el contenedor está corriendo (Criterio 4: Evidencia de funcionamiento)
+            if [ $(docker ps -q -f name=quetsana-app) ]; then
+              echo "¡ÉXITO: El contenedor quetsana-app está activo!"
+              docker ps -f name=quetsana-app
+            else
+              echo "ERROR: El contenedor no inició correctamente."
+              docker logs quetsana-app --tail 20
+              exit 1
+            fi

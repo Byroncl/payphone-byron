@@ -1,0 +1,51 @@
+name: CI/CD Quetsana Payphone
+
+on:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # ESTE PASO ES NUEVO: Copia tus archivos al VPS (Criterio 3)
+      - name: Copy files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: root
+          key: ${{ secrets.SSH_KEY }}
+          source: "." # Copia todo el repo
+          target: "/home/quetsana-payphone"
+
+      - name: Deploy and Verify
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: root
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/quetsana-payphone
+            
+            echo "--- INICIANDO DESPLIEGUE ---"
+            # Limpieza y reconstrucción (Buenas prácticas)
+            docker compose down || true
+            docker image prune -f
+            docker compose up --build -d
+            
+            echo "--- VERIFICACIÓN DE SALUD ---"
+            sleep 10
+            
+            # Verificación flexible (Criterio 4: Evidencia)
+            CONTAINER_ID=$(docker ps -q --filter "name=quetsana")
+            if [ -n "$CONTAINER_ID" ]; then
+              echo "¡ÉXITO: El contenedor de Quetsana está activo!"
+              docker ps --filter "id=$CONTAINER_ID"
+            else
+              echo "ERROR: El contenedor no inició correctamente."
+              docker compose logs --tail 20
+              exit 1
+            fi

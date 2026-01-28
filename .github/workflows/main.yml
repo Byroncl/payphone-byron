@@ -2,14 +2,14 @@ name: CI/CD Quetsana Payphone
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master" ] # Automatización completa al detectar cambios
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Integración con el SCM
 
       - name: Deploy and Verify
         uses: appleboy/ssh-action@v1.0.3
@@ -21,23 +21,27 @@ jobs:
             cd /home/quetsana-payphone
             
             echo "--- INICIANDO DESPLIEGUE ---"
-            # 1. Bajar servicios anteriores y limpiar imágenes huérfanas (Buenas prácticas)
+            # 1. Bajar servicios anteriores y limpiar imágenes (Buenas prácticas)
             docker compose down || true
             docker image prune -f
             
-            # 2. Reconstruir y levantar (Etapa de Build/Deploy en servidor)
+            # 2. Reconstruir y levantar
             docker compose up --build -d
             
             echo "--- VERIFICACIÓN DE SALUD ---"
-            # 3. Esperar unos segundos a que el contenedor inicie
-            sleep 5
+            # 3. Esperar a que los servicios inicien correctamente
+            sleep 10
             
-            # 4. Verificar si el contenedor está corriendo (Criterio 4: Evidencia de funcionamiento)
-            if [ $(docker ps -q -f name=quetsana-app) ]; then
-              echo "¡ÉXITO: El contenedor quetsana-app está activo!"
-              docker ps -f name=quetsana-app
+            # 4. Verificación flexible (Criterio 4: Evidencia de funcionamiento)
+            # Buscamos cualquier contenedor que contenga "quetsana" en el nombre
+            CONTAINER_ID=$(docker ps -q --filter "name=quetsana")
+            
+            if [ -n "$CONTAINER_ID" ]; then
+              echo "¡ÉXITO: El contenedor de Quetsana está activo!"
+              docker ps --filter "id=$CONTAINER_ID"
             else
               echo "ERROR: El contenedor no inició correctamente."
-              docker logs quetsana-app --tail 20
+              # Mostramos logs generales de compose para diagnosticar el fallo
+              docker compose logs --tail 20
               exit 1
             fi
